@@ -11,6 +11,8 @@
 # This can be run via cron
 # Example: 50 2 * * 1-7 bash /root/bin/suspend_until 09:30
 # This will suspend the server at 2:50 and restart it at 9:30
+#
+# Note: it can only be run as root.
 
 
 check_arguments() {
@@ -44,8 +46,6 @@ suspend_computer() {
     # Kill rtcwake if already running
     killall rtcwake
     # Set RTC wakeup time
-    # N.B. change "mem" for the suspend option
-    # find this by "man rtcwake"
     rtcwake -l -m disk -t $DESIRED &
     # feedback
     echo "Suspending..."
@@ -55,7 +55,6 @@ suspend_computer() {
 
 wake_up_with_monitor() {
     # Any commands you want to launch after wakeup can be placed here
-    # Remember: sudo may have expired by now
     # Check if xset is installed
     if ! command -v xset &> /dev/null
     then
