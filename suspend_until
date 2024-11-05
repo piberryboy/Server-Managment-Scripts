@@ -62,8 +62,7 @@ wake_up_with_monitor() {
         echo "xset not found. Please install it and rerun the script."
         exit 1
     fi
-    # Wake up with monitor enabled N.B. change "on" for "off" if
-    # you want the monitor to be disabled on wake
+
     xset dpms force on
 }
 
@@ -73,4 +72,3 @@ validate_time_format "$1"
 DESIRED_TIME=$(calculate_desired_time "$1")
 suspend_computer "$DESIRED_TIME"
 wake_up_with_monitor
-
