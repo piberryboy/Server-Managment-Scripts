@@ -1,0 +1,76 @@
+#!/bin/bash
+# Auto suspend and wake-up script
+#
+# Puts the computer on standby and automatically wakes it up at specified time
+#
+# Takes a 24hour time HH:MM as its argument
+# Example:
+# suspend_until 9:30
+# suspend_until 18:45
+#
+# This can be run via cron
+# Example: 50 2 * * 1-7 bash /root/bin/suspend_until 09:30
+# This will suspend the server at 2:50 and restart it at 9:30
+
+
+check_arguments() {
+    # Argument check
+    if [ $# -lt 1 ]; then
+        echo "Usage: suspend_until HH:MM"
+        exit
+    fi
+}
+
+validate_time_format() {
+    # Check if argument time format is correct HH:MM
+    if [[ ! $1 =~ ^([01][0-9]|2[0-3]):[0-5][0-9]$ ]]; then
+        echo "Time format is not correct. Use the 24-hour format HH:MM"
+        exit 1
+    fi
+}
+
+calculate_desired_time() {
+    # Check whether specified time today or tomorrow
+    DESIRED=$(($(date +%s -d "$1")))
+    NOW=$(($(date +%s)))
+    if [ $DESIRED -lt $NOW ]; then
+        DESIRED=$(($(date +%s -d "$1") + 24*60*60))
+    fi
+    echo $DESIRED
+}
+
+suspend_computer() {
+    local DESIRED=$1
+    # Kill rtcwake if already running
+    killall rtcwake
+    # Set RTC wakeup time
+    # N.B. change "mem" for the suspend option
+    # find this by "man rtcwake"
+    rtcwake -l -m disk -t $DESIRED &
+    # feedback
+    echo "Suspending..."
+    # give rtcwake some time to make its stuff
+    sleep 4
+}
+
+wake_up_with_monitor() {
+    # Any commands you want to launch after wakeup can be placed here
+    # Remember: sudo may have expired by now
+    # Check if xset is installed
+    if ! command -v xset &> /dev/null
+    then
+        echo "xset not found. Please install it and rerun the script."
+        exit 1
+    fi
+    # Wake up with monitor enabled N.B. change "on" for "off" if
+    # you want the monitor to be disabled on wake
+    xset dpms force on
+}
+
+# ------------------------------------------------------
+check_arguments "$@"
+validate_time_format "$1"
+DESIRED_TIME=$(calculate_desired_time "$1")
+suspend_computer "$DESIRED_TIME"
+wake_up_with_monitor
+

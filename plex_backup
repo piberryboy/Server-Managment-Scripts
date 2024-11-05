@@ -1,0 +1,22 @@
+#!/bin/bash
+# Script to backup Plex Media assets and metadata.
+
+src="/var/lib/plexmediaserver/Library/Application Support/Plex Media Server"
+dest="/mnt/firstdisk/Backups/"
+file="Plex Media Server"
+loggy="plex_bk_log"
+
+cd "$dest" || exit
+
+pwd # >> "$loggy"
+
+tar -xzf "$file.tar.gz" 2> "$loggy"
+
+rm "$file.tar.gz" 2> "$loggy"
+
+rsync -a "$src" "$dest" 2> "$loggy"
+
+tar -czf "$file.tar.gz" "$file" 2> "$loggy"
+
+rm -r "$file" 2> "$loggy"
+
